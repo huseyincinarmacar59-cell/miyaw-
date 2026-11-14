@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Miyav Doku">
+<meta name="theme-color" content="#fdf6ee">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>Miyav Doku</title>
+<style>
+:root{
+  --bg:#fdf6ee; --card:#fff; --ink:#4a3b35; --muted:#a08f86; --accent:#f08a4b; --red:#e5484d;
+  --gap:4px; --board:300px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,"SF Pro Rounded","Segoe UI",Roboto,"Nunito",sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
+#app{position:fixed;inset:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.screen{position:absolute;inset:0;padding:inherit;display:none}
+.screen.on{display:flex}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+/* ---------- Ana ekran ---------- */
+#home{flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px}
+#home .logo{width:min(38vw,38vh,190px);filter:drop-shadow(0 8px 14px rgba(120,70,40,.18));animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+#home h1{margin:0;font-size:clamp(36px,8vmin,64px);letter-spacing:-1px;color:var(--accent);text-shadow:0 3px 0 #f7d1b5}
+#home .sub{color:var(--muted);margin-top:-10px;font-size:clamp(14px,2.4vmin,18px)}
+.big{background:var(--accent);color:#fff;font-weight:800;font-size:clamp(18px,3.2vmin,24px);padding:16px 38px;border-radius:999px;box-shadow:0 6px 0 #c9652c;min-width:240px;transition:transform .08s}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 #c9652c}
+.soft{background:#fff;font-weight:700;font-size:clamp(16px,2.6vmin,20px);padding:13px 30px;border-radius:999px;box-shadow:0 4px 0 #ead9cc;min-width:240px}
+.soft:active{transform:translateY(3px);box-shadow:0 1px 0 #ead9cc}
+.stats{display:flex;gap:12px;color:var(--muted);font-weight:700}
+.stats b{color:var(--ink)}
+.hint-ios{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:16px;right:16px;margin:auto;max-width:460px;background:#fff;border-radius:16px;padding:12px 14px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);display:none;text-align:center}
+.hint-ios.on{display:block}
+
+/* ---------- Bölüm seç ---------- */
+#levels{flex-direction:column;padding:12px}
+.topbar{display:flex;align-items:center;gap:10px;padding:6px 4px}
+.iconbtn{width:46px;height:46px;border-radius:50%;background:#fff;box-shadow:0 3px 0 #ead9cc;display:grid;place-items:center;font-size:22px;flex:none}
+.iconbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #ead9cc}
+.topbar h2{margin:0;flex:1;text-align:center;font-size:22px}
+#lvGrid{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;padding:10px 4px 20px;align-content:start;touch-action:pan-y}
+.lv{aspect-ratio:1;border-radius:16px;background:#fff;font-weight:800;font-size:18px;box-shadow:0 3px 0 #ead9cc;position:relative}
+.lv.done{background:#ffe3cf;color:#b8561e}
+.lv.done::after{content:"🐾";position:absolute;right:4px;bottom:2px;font-size:12px}
+.lv.cur{background:var(--accent);color:#fff;box-shadow:0 3px 0 #c9652c}
+.lv.lock{opacity:.4}
+.pager{display:flex;justify-content:center;align-items:center;gap:14px;padding:6px;font-weight:700}
+
+/* ---------- Oyun ---------- */
+#game{flex-direction:column;align-items:center}
+#game .head{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px 0;gap:8px}
+.info{display:flex;gap:22px;text-align:center}
+.info small{display:block;color:var(--muted);font-weight:700;font-size:13px}
+.info b{font-size:24px}
+#scoreV{color:var(--accent)}
+.rules{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:6px 10px;font-size:12px;color:var(--muted);font-weight:700}
+.rules span{background:#fff;border-radius:10px;padding:5px 9px}
+.tracker{display:flex;gap:3px;justify-content:center;padding:2px 8px 4px;flex-wrap:wrap}
+.tracker i{width:22px;height:22px;border-radius:50%;display:block;opacity:.45;transition:.2s}
+.tracker i.ok{opacity:1;box-shadow:0 0 0 2px #fff,0 0 0 3px currentColor}
+#boardWrap{flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;padding:6px}
+#board{width:var(--board);height:var(--board);display:grid;gap:var(--gap);padding:var(--gap);background:#fff;border-radius:18px;box-shadow:0 8px 24px rgba(120,70,40,.12);touch-action:none}
+.cell{border-radius:22%;position:relative;display:grid;place-items:center;transition:transform .08s,filter .15s}
+.cell.dim{filter:saturate(.75) brightness(1.04)}
+.cell .x{width:46%;height:46%;opacity:.95}
+.cell .x.auto{opacity:.55}
+.cell .cat{width:88%;height:88%;animation:pop .22s ease-out}
+.cell.bad{animation:shake .35s}
+.cell.bad .cat{filter:drop-shadow(0 0 3px var(--red))}
+.cell.bad::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 3px var(--red)}
+.cell.flash{animation:flash .9s 2}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes flash{50%{filter:brightness(1.35);transform:scale(1.08)}}
+.controls{display:flex;gap:18px;justify-content:center;padding:6px 10px 12px}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.ctl .iconbtn{width:58px;height:58px;font-size:26px}
+.timer{font-variant-numeric:tabular-nums}
+
+/* Yatay: panel solda, tahta sağda */
+@media (orientation:landscape){
+  #game{flex-direction:row}
+  #game .side{height:100%;width:min(300px,38vw);display:flex;flex-direction:column;justify-content:center;gap:10px;padding:10px 6px 10px 14px}
+  #game .head{padding:0;flex-wrap:wrap}
+  .rules{flex-direction:column;align-items:stretch;padding:0}
+  .controls{flex-wrap:wrap;padding:0}
+  #boardWrap{height:100%}
+}
+@media (orientation:portrait){ #game .side{display:contents} #boardWrap{order:4} .controls{order:5} }
+
+/* ---------- Pencereler ---------- */
+.modal{position:absolute;inset:0;background:rgba(74,59,53,.35);display:none;align-items:center;justify-content:center;z-index:10;padding:20px}
+.modal.on{display:flex}
+.box{background:var(--bg);border-radius:26px;padding:24px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.2);animation:pop .3s}
+.box h3{margin:6px 0;font-size:30px;color:var(--accent)}
+.box p{color:var(--muted);font-weight:600}
+.box .row{display:flex;flex-direction:column;gap:12px;align-items:center;margin-top:14px}
+.setrow{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:12px 14px;margin:8px 0;font-weight:700;text-align:left;gap:10px}
+.sw{width:52px;height:30px;border-radius:99px;background:#e2d6cd;position:relative;flex:none;transition:.2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.on{background:var(--accent)}.sw.on::after{left:25px}
+#confetti{position:absolute;inset:0;pointer-events:none;z-index:11}
+.toast{position:absolute;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-120px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;z-index:20;transition:transform .25s;font-size:15px;width:max-content;max-width:min(92vw,520px);text-align:center;line-height:1.35}
+.toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Ana ekran -->
+  <section id="home" class="screen on">
+    <svg class="logo" viewBox="0 0 100 100"><use href="#catSym"/></svg>
+    <h1>Miyav Doku</h1>
+    <div class="sub">Her renge bir kedi 🐾</div>
+    <div class="stats"><span>Bölüm <b id="hLevel">1</b></span><span>Skor <b id="hScore">0</b></span></div>
+    <button class="big" id="btnPlay">Oyna</button>
+    <button class="soft" id="btnLevels">Bölümler</button>
+    <button class="soft" id="btnHow">Nasıl oynanır?</button>
+    <button class="soft" id="btnFull">⛶ Tam ekran</button>
+    <div class="hint-ios" id="iosHint">Tam ekran için: Safari'de <b>Paylaş</b> ⬆️ → <b>Ana Ekrana Ekle</b>. Sonra ana ekrandaki kediye dokun 🐱</div>
+  </section>
+
+  <!-- Bölüm seç -->
+  <section id="levels" class="screen">
+    <div class="topbar"><button class="iconbtn" data-go="home">←</button><h2>Bölümler</h2><span style="width:46px"></span></div>
+    <div id="lvGrid"></div>
+    <div class="pager"><button class="iconbtn" id="pgPrev">‹</button><span id="pgLbl"></span><button class="iconbtn" id="pgNext">›</button></div>
+  </section>
+
+  <!-- Oyun -->
+  <section id="game" class="screen">
+    <div class="side">
+      <div class="head">
+        <button class="iconbtn" data-go="home">←</button>
+        <div class="info">
+          <div><small>Bölüm</small><b id="gLevel">1</b></div>
+          <div><small>Skor</small><b id="scoreV">0</b></div>
+          <div><small>Süre</small><b class="timer" id="gTime">0:00</b></div>
+        </div>
+        <button class="iconbtn" id="btnSet">⚙️</button>
+      </div>
+      <div class="rules"><span>🎨 Renk başına 1 kedi</span><span>↔️ Satır ve sütuna 1 kedi</span><span>🚫 Kediler birbirine değemez</span></div>
+      <div class="tracker" id="tracker"></div>
+      <div class="controls">
+        <div class="ctl"><button class="iconbtn" id="btnUndo">↩️</button>Geri al</div>
+        <div class="ctl"><button class="iconbtn" id="btnHint">💡</button>İpucu</div>
+        <div class="ctl"><button class="iconbtn" id="btnReset">🧹</button>Temizle</div>
+      </div>
+    </div>
+    <div id="boardWrap"><div id="board"></div></div>
+  </section>
+
+  <!-- Kazandın -->
+  <div class="modal" id="mWin"><div class="box">
+    <svg viewBox="0 0 100 100" width="96"><use href="#catSym"/></svg>
+    <h3>Bravo! 🎉</h3>
+    <p id="winTxt"></p>
+    <div class="row"><button class="big" id="btnNext">Sonraki bölüm</button><button class="soft" data-go="home">Ana menü</button></div>
+  </div></div>
+
+  <!-- Ayarlar -->
+  <div class="modal" id="mSet"><div class="box">
+    <h3>Ayarlar</h3>
+    <div class="setrow">Otomatik çarpı<span class="sw" data-set="autoX"></span></div>
+    <div class="setrow">Hataları göster<span class="sw" data-set="showErr"></span></div>
+    <div class="setrow">Ses<span class="sw" data-set="sound"></span></div>
+    <div class="setrow">Titreşim<span class="sw" data-set="vibe"></span></div>
+    <div class="row"><button class="big" data-close>Tamam</button></div>
+  </div></div>
+
+  <!-- Nasıl oynanır -->
+  <div class="modal" id="mHow"><div class="box" style="text-align:left">
+    <h3 style="text-align:center">Nasıl oynanır?</h3>
+    <p>🐱 Her <b>renkli bölgeye</b> tam olarak <b>1 kedi</b> koy.</p>
+    <p>↔️ Her <b>satırda</b> ve her <b>sütunda</b> sadece 1 kedi olabilir.</p>
+    <p>🚫 Kediler birbirine <b>değemez</b>, çaprazdan bile.</p>
+    <p>👆 Bir dokunuş ❌, iki dokunuş 🐱 koyar. Parmağını sürükleyerek çok sayıda ❌ atabilirsin.</p>
+    <p>🧠 Tahmin etmen hiç gerekmez, her bölüm mantıkla çözülür. İlk adım için <b>küçük renklere</b> ve <b>tek satıra/sütuna sıkışmış renklere</b> bak. Takılırsan 💡 sana nedenini anlatır.</p>
+    <div class="row"><button class="big" data-close>Anladım</button></div>
+  </div></div>
+
+  <canvas id="confetti"></canvas>
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- Kedi çizimi (özgün) -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="catSym" viewBox="0 0 100 100">
+      <path d="M14 46 L18 10 L42 28 Z" fill="#3b3330"/>
+      <path d="M86 46 L82 10 L58 28 Z" fill="#3b3330"/>
+      <path d="M21 36 L23 19 L35 29 Z" fill="#f6b1c3"/>
+      <path d="M79 36 L77 19 L65 29 Z" fill="#f6b1c3"/>
+      <ellipse cx="50" cy="56" rx="38" ry="34" fill="#3b3330"/>
+      <path d="M50 30 C40 42 22 56 22 70 C22 84 36 90 50 90 C64 90 78 84 78 70 C78 56 60 42 50 30Z" fill="#fff"/>
+      <ellipse cx="35" cy="56" rx="8" ry="9" fill="#fff"/>
+      <ellipse cx="65" cy="56" rx="8" ry="9" fill="#fff"/>
+      <ellipse cx="35" cy="57" rx="5.5" ry="7" fill="#2a2320"/>
+      <ellipse cx="65" cy="57" rx="5.5" ry="7" fill="#2a2320"/>
+      <circle cx="37" cy="54" r="2" fill="#fff"/>
+      <circle cx="67" cy="54" r="2" fill="#fff"/>
+      <path d="M46 66 h8 l-4 4z" fill="#f08aa4"/>
+      <path d="M50 70 q-4 6 -9 3 M50 70 q4 6 9 3" stroke="#3b3330" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="26" cy="72" rx="5" ry="3" fill="#ffc9d6" opacity=".8"/>
+      <ellipse cx="74" cy="72" rx="5" ry="3" fill="#ffc9d6" opacity=".8"/>
+    </symbol>
+    <symbol id="xSym" viewBox="0 0 10 10">
+      <path d="M2 2 L8 8 M8 2 L2 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script src="logic.js"></script>
+<script src="gen.js"></script>
+<script src="levels.js"></script>
+<script>
+(function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const COLORS = ['#f59a4a','#ec7fb8','#9b7fd1','#3f5fa8','#86c5ef','#36b89c','#f2c94c','#9bd35a','#a8653f','#ef6461'];
+
+// ---------- Kayıt ----------
+const KEY = 'miyavdoku-v1';
+let S = { max:1, score:0, done:{}, set:{autoX:true, showErr:true, sound:true, vibe:true}, cur:null };
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) { if (d.lv !== 2) d.cur = null; d.lv = 2; S = Object.assign(S, d); S.set = Object.assign({autoX:true,showErr:true,sound:true,vibe:true}, d.set||{}); } } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+// ---------- Ekranlar ----------
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  document.querySelectorAll('.modal').forEach(m => m.classList.remove('on'));
+  if (id !== 'game') stopTimer();
+  if (id === 'home') { $('#hLevel').textContent = S.max; $('#hScore').textContent = S.score; }
+  if (id === 'levels') renderLevels();
+  if (id === 'game') { layout(); startTimer(); }
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { saveCur(); show(g.dataset.go); }
+  if (e.target.closest('[data-close]')) e.target.closest('.modal').classList.remove('on');
+});
+function toast(msg, ms){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),ms||1800); }
+
+// ---------- Ses / titreşim ----------
+let AC = null;
+function beep(f, d=0.08, type='sine', vol=0.08){
+  if (!S.set.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = f; g.gain.value = vol;
+    o.connect(g); g.connect(AC.destination);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d);
+    o.start(); o.stop(AC.currentTime + d);
+  } catch(e){}
+}
+function vibe(ms){ if (S.set.vibe && navigator.vibrate) try{navigator.vibrate(ms)}catch(e){} }
+
+// ---------- Bölüm yükleme ----------
+function seedShuffle(arr, seed){ const a=arr.slice(); let s=seed*9301+49297; for(let i=a.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function loadLevel(n){
+  let N, regions;
+  const L = window.MIYAV_LEVELS;
+  if (L && n <= L.length) { const str = L[n-1]; N = Math.round(Math.sqrt(str.length)); regions = [...str].map(ch => parseInt(ch,36)); }
+  else { const g = MiyavGen.generate(n); N = g.N; regions = g.regions; }
+  const sol = MiyavGen.solve(N, regions, 1)[0];
+  return { n, N, regions, sol, colors: seedShuffle(COLORS.slice(0,10), n).slice(0,N) };
+}
+
+// ---------- Oyun durumu ----------
+let G = null; // {lv, marks:[], hist:[], time, hints}
+function startLevel(n, resume){
+  const lv = loadLevel(n);
+  G = { lv, marks: new Array(lv.N*lv.N).fill(0), hist: [], time: 0, hints: 0, won:false };
+  if (resume && S.cur && S.cur.n === n && S.cur.marks && S.cur.marks.length === lv.N*lv.N) {
+    G.marks = S.cur.marks.slice(); G.time = S.cur.time||0; G.hints = S.cur.hints||0;
+  }
+  buildBoard(); render(); show('game');
+}
+function saveCur(){ if (G && !G.won) { S.cur = { n:G.lv.n, marks:G.marks, time:G.time, hints:G.hints }; save(); } }
+
+// ---------- Zamanlayıcı ----------
+let tick = null;
+function startTimer(){ stopTimer(); tick = setInterval(() => { if (G && !G.won && document.visibilityState==='visible') { G.time++; $('#gTime').textContent = fmt(G.time); if (G.time%5===0) saveCur(); } }, 1000); }
+function stopTimer(){ if (tick) clearInterval(tick); tick = null; }
+const fmt = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+
+// ---------- Tahta ----------
+let cells = [];
+function buildBoard(){
+  const { N, regions, colors } = G.lv;
+  const b = $('#board'); b.innerHTML = '';
+  b.style.gridTemplateColumns = `repeat(${N},1fr)`;
+  b.style.setProperty('--gap', N >= 9 ? '3px' : '4px');
+  cells = [];
+  for (let i=0;i<N*N;i++){
+    const d = document.createElement('div');
+    d.className = 'cell'; d.dataset.i = i;
+    d.style.background = colors[regions[i]];
+    b.appendChild(d); cells.push(d);
+  }
+  const tr = $('#tracker'); tr.innerHTML='';
+  colors.forEach((c,k) => { const i=document.createElement('i'); i.style.background=c; i.style.color=c; i.dataset.g=k; tr.appendChild(i); });
+  $('#gLevel').textContent = G.lv.n;
+  $('#scoreV').textContent = S.score;
+  $('#gTime').textContent = fmt(G.time);
+  layout();
+}
+function layout(){
+  const w = $('#boardWrap'); if (!w || !G) return;
+  const r = w.getBoundingClientRect();
+  const s = Math.max(120, Math.floor(Math.min(r.width, r.height) - 12));
+  document.documentElement.style.setProperty('--board', s+'px');
+}
+window.addEventListener('resize', () => setTimeout(layout, 50));
+window.addEventListener('orientationchange', () => setTimeout(layout, 250));
+
+function cats(){ const a=[]; G.marks.forEach((m,i)=>{ if(m===2) a.push(i); }); return a; }
+function autoXSet(){
+  const set = new Set(); if (!S.set.autoX) return set;
+  const { N, regions } = G.lv;
+  for (const i of cats()){
+    const r=(i/N)|0, c=i%N, g=regions[i];
+    for (let j=0;j<N*N;j++){
+      if (j===i) continue;
+      const rr=(j/N)|0, cc=j%N;
+      if (rr===r || cc===c || regions[j]===g || (Math.abs(rr-r)<=1 && Math.abs(cc-c)<=1)) set.add(j);
+    }
+  }
+  return set;
+}
+function conflicts(){
+  const { N, regions } = G.lv; const bad = new Set(); const cs = cats();
+  for (let a=0;a<cs.length;a++) for (let b=a+1;b<cs.length;b++){
+    const i=cs[a], j=cs[b]; const r1=(i/N)|0,c1=i%N,r2=(j/N)|0,c2=j%N;
+    if (r1===r2||c1===c2||regions[i]===regions[j]||(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1)) { bad.add(i); bad.add(j); }
+  }
+  return bad;
+}
+const CAT = '<svg class="cat" viewBox="0 0 100 100"><use href="#catSym"/></svg>';
+const X = a => `<svg class="x${a?' auto':''}" viewBox="0 0 10 10"><use href="#xSym"/></svg>`;
+function render(){
+  const ax = autoXSet(); const bad = S.set.showErr ? conflicts() : new Set();
+  cells.forEach((d,i) => {
+    const m = G.marks[i];
+    const want = m===2 ? 'c' : m===1 ? 'x' : ax.has(i) ? 'a' : '';
+    if (d.dataset.v !== want) { d.dataset.v = want; d.innerHTML = want==='c'?CAT : want==='x'?X(false) : want==='a'?X(true) : ''; }
+    d.classList.toggle('dim', want==='x'||want==='a');
+    d.classList.toggle('bad', bad.has(i));
+  });
+  const got = new Set(cats().map(i => G.lv.regions[i]));
+  document.querySelectorAll('#tracker i').forEach(t => t.classList.toggle('ok', got.has(+t.dataset.g)));
+}
+
+// ---------- Dokunma ----------
+let drag = null;
+function cellAt(x,y){ const el = document.elementFromPoint(x,y); const c = el && el.closest && el.closest('.cell'); return c ? +c.dataset.i : -1; }
+function setMark(i, v){ if (G.marks[i]===v) return false; G.hist.push([i, G.marks[i]]); G.marks[i]=v; return true; }
+$('#board').addEventListener('pointerdown', e => {
+  if (!G || G.won) return;
+  const i = cellAt(e.clientX, e.clientY); if (i<0) return;
+  e.preventDefault();
+  drag = { start:i, moved:false, last:i, paint: G.marks[i]===0 ? 1 : (G.marks[i]===1 ? 0 : null) };
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const i = cellAt(e.clientX, e.clientY);
+  if (i<0 || i===drag.last) return;
+  if (drag.paint === null) return;
+  if (!drag.moved){ drag.moved = true; G.hist.push(['grp']); paintCell(drag.start); }
+  paintCell(i); drag.last = i; render();
+}, {passive:true});
+function paintCell(i){ if (G.marks[i]===2) return; setMark(i, drag.paint); }
+window.addEventListener('pointerup', () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.moved) { G.hist.push(['end']); beep(520,0.05); afterMove(); return; }
+  const i = d.start; const nv = (G.marks[i]+1)%3;
+  setMark(i, nv);
+  if (nv===2){ beep(880,0.1,'triangle'); vibe(12); } else if (nv===1) beep(520,0.05); else beep(300,0.04);
+  afterMove();
+});
+window.addEventListener('pointercancel', () => { drag = null; });
+
+function afterMove(){
+  render(); saveCur();
+  if (S.set.showErr && conflicts().size) { vibe([20,40,20]); beep(180,0.15,'square',0.04); }
+  checkWin();
+}
+function undo(){
+  if (!G || G.won || !G.hist.length) return;
+  let h = G.hist.pop();
+  if (h[0]==='end'){ while (G.hist.length){ h = G.hist.pop(); if (h[0]==='grp') break; G.marks[h[0]] = h[1]; } }
+  else if (h[0]!=='grp') G.marks[h[0]] = h[1];
+  beep(400,0.05); render(); saveCur();
+}
+$('#btnUndo').onclick = undo;
+$('#btnReset').onclick = () => { if (!G||G.won) return; if (G.marks.some(m=>m)) { G.hist.push(['grp']); G.marks.forEach((m,i)=>{ if(m){ G.hist.push([i,m]); G.marks[i]=0; } }); G.hist.push(['end']); render(); saveCur(); toast('Tahta temizlendi (geri alabilirsin)'); } };
+
+// ---------- İpucu ----------
+$('#btnHint').onclick = () => {
+  if (!G || G.won) return;
+  const { N, sol, regions } = G.lv; const isSol = i => sol[(i/N)|0] === i%N;
+  const flash = i => { const c=cells[i]; c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1900); };
+  const wrongCat = cats().find(i => !isSol(i));
+  if (wrongCat !== undefined) { flash(wrongCat); toast('Bu kedi yanlış yerde 🙀 Kaldırıp tekrar dene'); return; }
+  const wrongX = G.marks.findIndex((m,i) => m===1 && isSol(i));
+  if (wrongX >= 0) { flash(wrongX); toast('Bu çarpı yanlış, buraya kedi gelebilir 🤔'); return; }
+  // Mantık çözücüden bir sonraki adımı al
+  const st = { cand: new Uint8Array(N*N).fill(1), cat: new Uint8Array(N*N) };
+  cats().forEach(i => MiyavLogic.apply(N, regions, st, { cat:i, xs:[] }));
+  G.marks.forEach((m,i) => { if (m===1) st.cand[i] = 0; });
+  let step = MiyavLogic.nextStep(N, regions, st, 3);
+  if (!step || step.bad) { // olmaz ama yine de: doğru bir kedi göster
+    const r = sol.findIndex((c,r) => G.marks[r*N+c]!==2); if (r<0) return;
+    step = { cat: r*N+sol[r], xs: [], msg: 'Bu kareye kedi gelmeli 🐱', hl: [] };
+  }
+  G.hints++;
+  (step.hl||[]).forEach(flash);
+  if (step.cat !== undefined) { setMark(step.cat, 2); flash(step.cat); beep(990,0.12,'triangle'); }
+  else { G.hist.push(['grp']); step.xs.forEach(i => { setMark(i, 1); flash(i); }); G.hist.push(['end']); beep(700,0.08); }
+  toast('💡 ' + step.msg, 4200);
+  afterMove();
+};
+
+// ---------- Kazanma ----------
+function checkWin(){
+  const { N } = G.lv; const cs = cats();
+  if (cs.length !== N || conflicts().size) return;
+  const regs = new Set(cs.map(i=>G.lv.regions[i])); if (regs.size !== N) return;
+  G.won = true; stopTimer();
+  const base = 50 + N*15, bonus = Math.max(0, N*25 - G.time), pen = G.hints*20;
+  const gain = Math.max(20, base + bonus - pen);
+  const first = !S.done[G.lv.n];
+  S.score += gain; S.done[G.lv.n] = 1; S.max = Math.max(S.max, G.lv.n+1); S.cur = null; save();
+  $('#scoreV').textContent = S.score;
+  $('#winTxt').innerHTML = `Süre: <b>${fmt(G.time)}</b> · +${gain} puan${first?'':' (tekrar)'}${G.hints?`<br>${G.hints} ipucu kullandın`:''}`;
+  [660,880,1100,1320].forEach((f,k)=>setTimeout(()=>beep(f,0.15,'triangle'),k*110)); vibe([30,50,30]);
+  cells.forEach((c,k)=>{ if (G.marks[k]===2) { c.classList.add('flash'); } });
+  confetti();
+  setTimeout(()=>$('#mWin').classList.add('on'), 700);
+}
+$('#btnNext').onclick = () => startLevel(G.lv.n+1, false);
+
+// ---------- Konfeti ----------
+function confetti(){
+  const cv=$('#confetti'), ctx=cv.getContext('2d'); const W=cv.width=innerWidth*devicePixelRatio, H=cv.height=innerHeight*devicePixelRatio;
+  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  const ps=[...Array(140)].map(()=>({x:W/2,y:H*0.45,vx:(Math.random()-.5)*W*0.03,vy:-Math.random()*H*0.03-H*0.005,s:(6+Math.random()*8)*devicePixelRatio,c:COLORS[Math.floor(Math.random()*10)],r:Math.random()*6,vr:(Math.random()-.5)*.3}));
+  let f=0; (function step(){ ctx.clearRect(0,0,W,H); ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=H*0.0009;p.vx*=.99;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore();}); if(++f<150) requestAnimationFrame(step); else ctx.clearRect(0,0,W,H); })();
+}
+
+// ---------- Bölüm listesi ----------
+const PER = 60; let page = 0;
+function renderLevels(){
+  const g = $('#lvGrid'); g.innerHTML='';
+  const from = page*PER+1;
+  for (let n=from; n<from+PER; n++){
+    const b = document.createElement('button'); b.className='lv'; b.textContent=n;
+    if (S.done[n]) b.classList.add('done');
+    if (n===S.max) b.classList.add('cur');
+    if (n>S.max) b.classList.add('lock');
+    b.onclick = () => { if (n>S.max) { toast('Önce önceki bölümleri bitir 🔒'); return; } startLevel(n, true); };
+    g.appendChild(b);
+  }
+  $('#pgLbl').textContent = `${from} – ${from+PER-1}`;
+}
+$('#pgPrev').onclick = () => { if (page>0){ page--; renderLevels(); } };
+$('#pgNext').onclick = () => { page++; renderLevels(); };
+
+// ---------- Ana menü butonları ----------
+$('#btnPlay').onclick = () => startLevel(S.cur && S.cur.n ? S.cur.n : S.max, true);
+$('#btnLevels').onclick = () => { page = Math.floor((S.max-1)/PER); show('levels'); };
+$('#btnHow').onclick = () => $('#mHow').classList.add('on');
+$('#btnSet').onclick = () => { syncSw(); $('#mSet').classList.add('on'); };
+function syncSw(){ document.querySelectorAll('[data-set]').forEach(s => s.classList.toggle('on', !!S.set[s.dataset.set])); }
+document.querySelectorAll('[data-set]').forEach(s => s.onclick = () => { const k=s.dataset.set; S.set[k]=!S.set[k]; save(); syncSw(); if (G) render(); });
+
+// ---------- Tam ekran ----------
+const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const de = document.documentElement;
+const canFS = !!(de.requestFullscreen || de.webkitRequestFullscreen);
+const isIOS = /iP(hone|od|ad)/.test(navigator.platform) || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+if (standalone) $('#btnFull').style.display='none';
+$('#btnFull').onclick = () => {
+  if (canFS && !(isIOS && /iPhone/.test(navigator.userAgent))) {
+    const p = de.requestFullscreen ? de.requestFullscreen() : de.webkitRequestFullscreen();
+    if (p && p.catch) p.catch(()=>$('#iosHint').classList.add('on'));
+  } else $('#iosHint').classList.add('on');
+};
+if (isIOS && !standalone) $('#iosHint').classList.add('on');
+document.addEventListener('fullscreenchange', () => setTimeout(layout,100));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState==='hidden') saveCur(); });
+// iOS'ta çift dokunma ile yakınlaştırmayı engelle
+document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
+document.addEventListener('gesturestart', e => e.preventDefault());
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+show('home');
+if (!S.seenHow) { S.seenHow = 1; save(); $('#mHow').classList.add('on'); }
+})();
+</script>
+</body>
+</html>
