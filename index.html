@@ -63,8 +63,16 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .rules{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:6px 10px;font-size:12px;color:var(--muted);font-weight:700}
 .rules span{background:#fff;border-radius:10px;padding:5px 9px}
 .tracker{display:flex;gap:3px;justify-content:center;padding:2px 8px 4px;flex-wrap:wrap}
-.tracker i{width:22px;height:22px;border-radius:50%;display:block;opacity:.45;transition:.2s}
-.tracker i.ok{opacity:1;box-shadow:0 0 0 2px #fff,0 0 0 3px currentColor}
+.tracker i{width:26px;height:26px;display:block;position:relative;filter:grayscale(1);opacity:.35;transition:.25s}
+.tracker i svg{width:100%;height:100%;display:block}
+.tracker i b{position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 1.5px #fff}
+.tracker i.ok{filter:none;opacity:1;transform:scale(1.08)}
+.lives{display:flex;justify-content:center;gap:4px;font-size:22px;padding:2px 0}
+.lives .lost{filter:grayscale(1);opacity:.25}
+.iconbtn{position:relative}
+.badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:var(--red);color:#fff;font-style:normal;font-weight:800;font-size:13px;display:grid;place-items:center;padding:0 5px;box-shadow:0 0 0 2px var(--bg)}
+.badge.zero{background:#c9bcb3}
+.cell .x.red{opacity:1}
 #boardWrap{flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;padding:6px}
 #board{width:var(--board);height:var(--board);display:grid;gap:var(--gap);padding:var(--gap);background:#fff;border-radius:18px;box-shadow:0 8px 24px rgba(120,70,40,.12);touch-action:none}
 .cell{border-radius:22%;position:relative;min-width:0;min-height:0;overflow:hidden;transition:transform .08s,filter .15s}
@@ -149,10 +157,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
         <button class="iconbtn" id="btnSet">⚙️</button>
       </div>
       <div class="rules"><span>🎨 Renk başına 1 kedi</span><span>↔️ Satır ve sütuna 1 kedi</span><span>🚫 Kediler birbirine değemez</span></div>
+      <div class="lives" id="lives"></div>
       <div class="tracker" id="tracker"></div>
       <div class="controls">
         <div class="ctl"><button class="iconbtn" id="btnUndo">↩️</button>Geri al</div>
-        <div class="ctl"><button class="iconbtn" id="btnHint">💡</button>İpucu</div>
+        <div class="ctl"><button class="iconbtn" id="btnCat"><svg viewBox="0 0 100 100" width="34"><use href="#catSym"/></svg><em class="badge" id="catN">1</em></button>Kedi</div>
+        <div class="ctl"><button class="iconbtn" id="btnHint">💡<em class="badge" id="hintN">3</em></button>İpucu</div>
         <div class="ctl"><button class="iconbtn" id="btnReset">🧹</button>Temizle</div>
       </div>
     </div>
@@ -167,11 +177,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="row"><button class="big" id="btnNext">Sonraki bölüm</button><button class="soft" data-go="home">Ana menü</button></div>
   </div></div>
 
+  <!-- Balıklar bitti -->
+  <div class="modal" id="mLose"><div class="box">
+    <div style="font-size:54px">😿</div>
+    <h3>Balıklar bitti!</h3>
+    <p>3 kez yanlış kareye kedi koydun. Bölümü baştan dene, bu sefer olur 💪</p>
+    <div class="row"><button class="big" id="btnRetry">Tekrar dene</button><button class="soft" data-go="home">Ana menü</button></div>
+  </div></div>
+
   <!-- Ayarlar -->
   <div class="modal" id="mSet"><div class="box">
     <h3>Ayarlar</h3>
     <div class="setrow">Otomatik çarpı<span class="sw" data-set="autoX"></span></div>
-    <div class="setrow">Hataları göster<span class="sw" data-set="showErr"></span></div>
     <div class="setrow">Ses<span class="sw" data-set="sound"></span></div>
     <div class="setrow">Titreşim<span class="sw" data-set="vibe"></span></div>
     <div class="row"><button class="big" data-close>Tamam</button></div>
@@ -184,6 +201,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <p>↔️ Her <b>satırda</b> ve her <b>sütunda</b> sadece 1 kedi olabilir.</p>
     <p>🚫 Kediler birbirine <b>değemez</b>, çaprazdan bile.</p>
     <p>👆 Bir dokunuş ❌, iki dokunuş 🐱 koyar. Parmağını sürükleyerek çok sayıda ❌ atabilirsin.</p>
+    <p>🐟 Her bölümde 3 balığın var. Yanlış kareye kedi koyarsan bir balık gider, 3'ü de giderse bölüm baştan başlar.</p>
+    <p>🎁 İlk 100 bölümde bir kedi hediye olarak yerinde gelir.</p>
     <p>🧠 Tahmin etmen hiç gerekmez, her bölüm mantıkla çözülür. İlk adım için <b>küçük renklere</b> ve <b>tek satıra/sütuna sıkışmış renklere</b> bak. Takılırsan 💡 sana nedenini anlatır.</p>
     <div class="row"><button class="big" data-close>Anladım</button></div>
   </div></div>
@@ -213,6 +232,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       <ellipse cx="26" cy="72" rx="5" ry="3" fill="#ffc9d6" opacity=".8"/>
       <ellipse cx="74" cy="72" rx="5" ry="3" fill="#ffc9d6" opacity=".8"/>
     </symbol>
+    <symbol id="xSymR" viewBox="0 0 10 10">
+      <path d="M2 2 L8 8 M8 2 L2 8" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M2 2 L8 8 M8 2 L2 8" stroke="#d93036" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
     <symbol id="xSym" viewBox="0 0 10 10">
       <path d="M2 2 L8 8 M8 2 L2 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
     </symbol>
@@ -230,8 +253,8 @@ const COLORS = ['#f59a4a','#ec7fb8','#9b7fd1','#3f5fa8','#86c5ef','#36b89c','#f2
 
 // ---------- Kayıt ----------
 const KEY = 'miyavdoku-v1';
-let S = { max:1, score:0, done:{}, set:{autoX:true, showErr:true, sound:true, vibe:true}, cur:null };
-try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) { if (d.lv !== 2) d.cur = null; d.lv = 2; S = Object.assign(S, d); S.set = Object.assign({autoX:true,showErr:true,sound:true,vibe:true}, d.set||{}); } } catch(e){}
+let S = { max:1, score:0, done:{}, hintsLeft:3, catsLeft:1, set:{autoX:true, sound:true, vibe:true}, cur:null };
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) { if (d.lv !== 3) d.cur = null; d.lv = 3; S = Object.assign(S, d); S.set = Object.assign({autoX:true,sound:true,vibe:true}, d.set||{}); } } catch(e){}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
 // ---------- Ekranlar ----------
@@ -276,20 +299,30 @@ function loadLevel(n){
 }
 
 // ---------- Oyun durumu ----------
-let G = null; // {lv, marks:[], hist:[], time, hints}
+// marks: 0 boş, 1 çarpı, 2 kedi. bad: yanlış kedi denemesi (kırmızı çarpı). lock: hediye kedi
+let G = null;
+const MAX_LIVES = 3;
+function pickStarter(lv){
+  if (lv.n > 100) return -1; // orijinaldeki gibi: 100. bölümden sonra hediye kedi yok
+  const { N, regions, sol } = lv; const size = new Array(N).fill(0); regions.forEach(g => size[g]++);
+  let best = 0; for (let r=1;r<N;r++) if (size[regions[r*N+sol[r]]] > size[regions[best*N+sol[best]]]) best = r;
+  return best*N + sol[best];
+}
 function startLevel(n, resume){
   const lv = loadLevel(n);
-  G = { lv, marks: new Array(lv.N*lv.N).fill(0), hist: [], time: 0, hints: 0, won:false };
+  G = { lv, marks: new Array(lv.N*lv.N).fill(0), bad: new Set(), hist: [], time: 0, hints: 0, lives: MAX_LIVES, won:false, lock: pickStarter(lv) };
+  if (G.lock >= 0) G.marks[G.lock] = 2;
   if (resume && S.cur && S.cur.n === n && S.cur.marks && S.cur.marks.length === lv.N*lv.N) {
     G.marks = S.cur.marks.slice(); G.time = S.cur.time||0; G.hints = S.cur.hints||0;
+    G.lives = S.cur.lives ?? MAX_LIVES; G.bad = new Set(S.cur.bad||[]);
   }
   buildBoard(); render(); show('game');
 }
-function saveCur(){ if (G && !G.won) { S.cur = { n:G.lv.n, marks:G.marks, time:G.time, hints:G.hints }; save(); } }
+function saveCur(){ if (G && !G.won) { S.cur = { n:G.lv.n, marks:G.marks, time:G.time, hints:G.hints, lives:G.lives, bad:[...G.bad] }; save(); } }
 
 // ---------- Zamanlayıcı ----------
 let tick = null;
-function startTimer(){ stopTimer(); tick = setInterval(() => { if (G && !G.won && document.visibilityState==='visible') { G.time++; $('#gTime').textContent = fmt(G.time); if (G.time%5===0) saveCur(); } }, 1000); }
+function startTimer(){ stopTimer(); tick = setInterval(() => { if (G && !G.won && document.visibilityState==='visible' && !$('#mLose').classList.contains('on')) { G.time++; $('#gTime').textContent = fmt(G.time); if (G.time%5===0) saveCur(); } }, 1000); }
 function stopTimer(){ if (tick) clearInterval(tick); tick = null; }
 const fmt = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
@@ -309,7 +342,7 @@ function buildBoard(){
     b.appendChild(d); cells.push(d);
   }
   const tr = $('#tracker'); tr.innerHTML='';
-  colors.forEach((c,k) => { const i=document.createElement('i'); i.style.background=c; i.style.color=c; i.dataset.g=k; tr.appendChild(i); });
+  colors.forEach((c,k) => { const i=document.createElement('i'); i.dataset.g=k; i.innerHTML = '<svg viewBox="0 0 100 100"><use href="#catSym"/></svg><b></b>'; i.querySelector('b').style.background=c; tr.appendChild(i); });
   $('#gLevel').textContent = G.lv.n;
   $('#scoreV').textContent = S.score;
   $('#gTime').textContent = fmt(G.time);
@@ -324,6 +357,7 @@ function layout(){
 window.addEventListener('resize', () => setTimeout(layout, 50));
 window.addEventListener('orientationchange', () => setTimeout(layout, 250));
 
+const isSol = i => G.lv.sol[(i/G.lv.N)|0] === i%G.lv.N;
 function cats(){ const a=[]; G.marks.forEach((m,i)=>{ if(m===2) a.push(i); }); return a; }
 function autoXSet(){
   const set = new Set(); if (!S.set.autoX) return set;
@@ -338,38 +372,35 @@ function autoXSet(){
   }
   return set;
 }
-function conflicts(){
-  const { N, regions } = G.lv; const bad = new Set(); const cs = cats();
-  for (let a=0;a<cs.length;a++) for (let b=a+1;b<cs.length;b++){
-    const i=cs[a], j=cs[b]; const r1=(i/N)|0,c1=i%N,r2=(j/N)|0,c2=j%N;
-    if (r1===r2||c1===c2||regions[i]===regions[j]||(Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1)) { bad.add(i); bad.add(j); }
-  }
-  return bad;
-}
 const CAT = '<svg class="cat" viewBox="0 0 100 100"><use href="#catSym"/></svg>';
 const X = a => `<svg class="x${a?' auto':''}" viewBox="0 0 10 10"><use href="#xSym"/></svg>`;
+const XR = '<svg class="x red" viewBox="0 0 10 10"><use href="#xSymR"/></svg>';
 function render(){
-  const ax = autoXSet(); const bad = S.set.showErr ? conflicts() : new Set();
+  const ax = autoXSet();
   cells.forEach((d,i) => {
     const m = G.marks[i];
-    const want = m===2 ? 'c' : m===1 ? 'x' : ax.has(i) ? 'a' : '';
-    if (d.dataset.v !== want) { d.dataset.v = want; d.innerHTML = want==='c'?CAT : want==='x'?X(false) : want==='a'?X(true) : ''; }
-    d.classList.toggle('bad', bad.has(i));
+    const want = m===2 ? 'c' : G.bad.has(i) ? 'r' : m===1 ? 'x' : ax.has(i) ? 'a' : '';
+    if (d.dataset.v !== want) { d.dataset.v = want; d.innerHTML = want==='c'?CAT : want==='r'?XR : want==='x'?X(false) : want==='a'?X(true) : ''; }
   });
   const got = new Set(cats().map(i => G.lv.regions[i]));
   document.querySelectorAll('#tracker i').forEach(t => t.classList.toggle('ok', got.has(+t.dataset.g)));
+  $('#lives').innerHTML = [...Array(MAX_LIVES)].map((_,k) => `<span class="${k < G.lives ? '' : 'lost'}">🐟</span>`).join('');
+  $('#hintN').textContent = S.hintsLeft; $('#catN').textContent = S.catsLeft;
+  $('#hintN').classList.toggle('zero', !S.hintsLeft); $('#catN').classList.toggle('zero', !S.catsLeft);
 }
+function flash(i){ const c=cells[i]; c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1900); }
 
 // ---------- Dokunma ----------
 let drag = null;
 function cellAt(x,y){ const el = document.elementFromPoint(x,y); const c = el && el.closest && el.closest('.cell'); return c ? +c.dataset.i : -1; }
-function setMark(i, v){ if (G.marks[i]===v) return false; G.hist.push([i, G.marks[i]]); G.marks[i]=v; return true; }
+function fixed(i){ return i === G.lock || G.bad.has(i); }
+function setMark(i, v){ if (G.marks[i]===v || fixed(i)) return false; G.hist.push([i, G.marks[i]]); G.marks[i]=v; return true; }
 let lastTap = { i:-1, t:0 };
 $('#board').addEventListener('pointerdown', e => {
-  if (!G || G.won || !e.isPrimary || drag) return;
+  if (!G || G.won || G.lives<=0 || !e.isPrimary || drag) return;
   const i = cellAt(e.clientX, e.clientY); if (i<0) return;
   e.preventDefault();
-  drag = { start:i, moved:false, last:i, paint: G.marks[i]===0 ? 1 : (G.marks[i]===1 ? 0 : null) };
+  drag = { start:i, moved:false, last:i, paint: fixed(i) ? null : G.marks[i]===0 ? 1 : (G.marks[i]===1 ? 0 : null) };
 });
 window.addEventListener('pointermove', e => {
   if (!drag) return;
@@ -385,20 +416,31 @@ window.addEventListener('pointerup', e => {
   const d = drag; drag = null;
   if (d.moved) { G.hist.push(['end']); beep(520,0.05); afterMove(); return; }
   const i = d.start; const now = Date.now();
-  if (lastTap.i === i && now - lastTap.t < 120) { return; } // hayalet ikinci dokunuşu yok say
+  if (lastTap.i === i && now - lastTap.t < 120) return; // hayalet ikinci dokunuşu yok say
   lastTap = { i, t: now };
+  if (i === G.lock) { flash(i); toast('Bu kedi hediye 🎁 Yerinden oynamaz'); return; }
+  if (G.bad.has(i)) { toast('Buraya kedi gelmiyor ❌'); return; }
   const nv = (G.marks[i]+1)%3;
+  if (nv===2 && !isSol(i)) { mistake(i); return; }
   setMark(i, nv);
   if (nv===2){ beep(880,0.1,'triangle'); vibe(12); } else if (nv===1) beep(520,0.05); else beep(300,0.04);
   afterMove();
 });
 window.addEventListener('pointercancel', () => { drag = null; });
 
-function afterMove(){
+// Yanlış kediye ceza: bir balık gider, kare kırmızı çarpı olur
+function mistake(i){
+  G.marks[i] = 1; G.bad.add(i); G.lives--;
+  G.hist = G.hist.filter(h => h[0] !== i);
+  const c = cells[i]; c.classList.remove('bad'); void c.offsetWidth; c.classList.add('bad'); setTimeout(()=>c.classList.remove('bad'),400);
+  beep(180,0.2,'square',0.05); vibe([30,60,30]);
   render(); saveCur();
-  if (S.set.showErr && conflicts().size) { vibe([20,40,20]); beep(180,0.15,'square',0.04); }
-  checkWin();
+  if (G.lives <= 0) { stopTimer(); $('#toast').classList.remove('on'); setTimeout(()=>$('#mLose').classList.add('on'), 450); }
+  else toast(G.lives===1 ? 'Dikkat! Son balığın kaldı 🐟' : 'Oops! Buraya kedi gelmiyor, bir balık gitti 🐟');
 }
+$('#btnRetry').onclick = () => { S.cur = null; save(); startLevel(G.lv.n, false); };
+
+function afterMove(){ render(); saveCur(); checkWin(); }
 function undo(){
   if (!G || G.won || !G.hist.length) return;
   let h = G.hist.pop();
@@ -407,27 +449,43 @@ function undo(){
   beep(400,0.05); render(); saveCur();
 }
 $('#btnUndo').onclick = undo;
-$('#btnReset').onclick = () => { if (!G||G.won) return; if (G.marks.some(m=>m)) { G.hist.push(['grp']); G.marks.forEach((m,i)=>{ if(m){ G.hist.push([i,m]); G.marks[i]=0; } }); G.hist.push(['end']); render(); saveCur(); toast('Tahta temizlendi (geri alabilirsin)'); } };
+$('#btnReset').onclick = () => {
+  if (!G||G.won) return;
+  const clr = G.marks.map((m,i)=>i).filter(i => G.marks[i] && !fixed(i));
+  if (!clr.length) return;
+  G.hist.push(['grp']); clr.forEach(i => { G.hist.push([i,G.marks[i]]); G.marks[i]=0; }); G.hist.push(['end']);
+  render(); saveCur(); toast('Tahta temizlendi (geri alabilirsin)');
+};
 
-// ---------- İpucu ----------
+// ---------- Kedi hakkı: doğru bir kediyi yerleştirir ----------
+$('#btnCat').onclick = () => {
+  if (!G || G.won) return;
+  if (!S.catsLeft) { toast('Kedi hakkın bitti 🐱 Her 3 bölümde bir hak kazanırsın'); return; }
+  const { N, sol } = G.lv;
+  const rows = []; for (let r=0;r<N;r++) if (G.marks[r*N+sol[r]]!==2) rows.push(r);
+  if (!rows.length) return;
+  const r = rows[Math.floor(Math.random()*rows.length)], i = r*N+sol[r];
+  S.catsLeft--; G.hints++; G.marks[i] = 2; G.hist = G.hist.filter(h => h[0] !== i);
+  flash(i); beep(990,0.12,'triangle'); toast('🐱 Bir kedi yerine yerleşti');
+  afterMove();
+};
+
+// ---------- İpucu: bir sonraki mantık adımını anlatır ----------
 $('#btnHint').onclick = () => {
   if (!G || G.won) return;
-  const { N, sol, regions } = G.lv; const isSol = i => sol[(i/N)|0] === i%N;
-  const flash = i => { const c=cells[i]; c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); setTimeout(()=>c.classList.remove('flash'),1900); };
-  const wrongCat = cats().find(i => !isSol(i));
-  if (wrongCat !== undefined) { flash(wrongCat); toast('Bu kedi yanlış yerde 🙀 Kaldırıp tekrar dene'); return; }
+  const { N, sol, regions } = G.lv;
   const wrongX = G.marks.findIndex((m,i) => m===1 && isSol(i));
-  if (wrongX >= 0) { flash(wrongX); toast('Bu çarpı yanlış, buraya kedi gelebilir 🤔'); return; }
-  // Mantık çözücüden bir sonraki adımı al
+  if (wrongX >= 0) { flash(wrongX); toast('Bu çarpı yanlış, buraya kedi gelebilir 🤔'); return; } // ücretsiz uyarı
+  if (!S.hintsLeft) { toast('İpucu hakkın bitti 💡 Her bölümü geçince 1 hak kazanırsın'); return; }
   const st = { cand: new Uint8Array(N*N).fill(1), cat: new Uint8Array(N*N) };
   cats().forEach(i => MiyavLogic.apply(N, regions, st, { cat:i, xs:[] }));
   G.marks.forEach((m,i) => { if (m===1) st.cand[i] = 0; });
   let step = MiyavLogic.nextStep(N, regions, st, 3);
-  if (!step || step.bad) { // olmaz ama yine de: doğru bir kedi göster
+  if (!step || step.bad) {
     const r = sol.findIndex((c,r) => G.marks[r*N+c]!==2); if (r<0) return;
     step = { cat: r*N+sol[r], xs: [], msg: 'Bu kareye kedi gelmeli 🐱', hl: [] };
   }
-  G.hints++;
+  S.hintsLeft--; G.hints++;
   (step.hl||[]).forEach(flash);
   if (step.cat !== undefined) { setMark(step.cat, 2); flash(step.cat); beep(990,0.12,'triangle'); }
   else { G.hist.push(['grp']); step.xs.forEach(i => { setMark(i, 1); flash(i); }); G.hist.push(['end']); beep(700,0.08); }
@@ -438,15 +496,19 @@ $('#btnHint').onclick = () => {
 // ---------- Kazanma ----------
 function checkWin(){
   const { N } = G.lv; const cs = cats();
-  if (cs.length !== N || conflicts().size) return;
-  const regs = new Set(cs.map(i=>G.lv.regions[i])); if (regs.size !== N) return;
+  if (cs.length !== N || !cs.every(isSol)) return;
   G.won = true; stopTimer();
-  const base = 50 + N*15, bonus = Math.max(0, N*25 - G.time), pen = G.hints*20;
-  const gain = Math.max(20, base + bonus - pen);
+  const base = 50 + N*10, bonus = Math.max(0, N*20 - G.time), lifeB = G.lives*10, pen = G.hints*15;
+  const gain = Math.max(20, base + bonus + lifeB - pen);
   const first = !S.done[G.lv.n];
+  let reward = '';
+  if (first) {
+    S.hintsLeft = Math.min(99, S.hintsLeft + 1); reward = '+1 💡';
+    if (G.lv.n % 3 === 0) { S.catsLeft = Math.min(99, S.catsLeft + 1); reward += '  +1 🐱'; }
+  }
   S.score += gain; S.done[G.lv.n] = 1; S.max = Math.max(S.max, G.lv.n+1); S.cur = null; save();
-  $('#scoreV').textContent = S.score;
-  $('#winTxt').innerHTML = `Süre: <b>${fmt(G.time)}</b> · +${gain} puan${first?'':' (tekrar)'}${G.hints?`<br>${G.hints} ipucu kullandın`:''}`;
+  $('#scoreV').textContent = S.score; render();
+  $('#winTxt').innerHTML = `Süre: <b>${fmt(G.time)}</b> · +${gain} puan${first?'':' (tekrar)'}<br>${'🐟'.repeat(G.lives)}${reward?`<br>Kazandın: <b>${reward}</b>`:''}`;
   [660,880,1100,1320].forEach((f,k)=>setTimeout(()=>beep(f,0.15,'triangle'),k*110)); vibe([30,50,30]);
   cells.forEach((c,k)=>{ if (G.marks[k]===2) { c.classList.add('flash'); } });
   confetti();

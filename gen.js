@@ -11,12 +11,13 @@
     };
   }
 
+  // Orijinal oyundaki gibi: 50. bölüm civarında 10x10'a ulaşır
   function sizeFor(level) {
-    if (level <= 4) return 5;
+    if (level <= 5) return 5;
     if (level <= 12) return 6;
-    if (level <= 30) return 7;
-    if (level <= 60) return 8;
-    if (level <= 110) return 9;
+    if (level <= 22) return 7;
+    if (level <= 34) return 8;
+    if (level <= 48) return 9;
     return 10;
   }
 
@@ -111,7 +112,7 @@
   }
 
   // Zorluk: ilk bölümler sadece temel mantık, sonra daha ileri teknikler
-  function maxKFor(level) { return level <= 40 ? 1 : level <= 200 ? 2 : 3; }
+  function maxKFor(level) { return level <= 30 ? 1 : level <= 150 ? 2 : 3; }
 
   function generate(level) {
     const N = sizeFor(level);

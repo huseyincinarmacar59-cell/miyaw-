@@ -7,12 +7,14 @@ Reklamsız, kedili mantık bulmacası. Telefonda ve tablette tam ekran çalış�
 - Her satır ve sütuna **1 kedi**
 - Kediler birbirine **değemez** (çapraz da dahil)
 
-Bir dokunuş ❌, iki dokunuş 🐱. Sürükleyerek çok sayıda ❌ atılır. 💡 ipucu bir sonraki mantık adımını anlatır.
+Orijinal **Meowdoku** gibi: her bölümde 3 balık (can) var, yanlış kareye kedi koyunca biri gider; ilk 100 bölümde bir kedi hediye gelir. Bir dokunuş ❌, iki dokunuş 🐱. Sürükleyerek çok sayıda ❌ atılır. 💡 ipucu bir sonraki mantık adımını anlatır.
 
 ## Bölümler
 - 1000 hazır bölüm (`levels.js`), hepsi **tek çözümlü** ve **tahminsiz, mantıkla çözülür**
 - 1000'den sonrası otomatik üretilir
-- Zorluk: 1–40 temel mantık, 41–200 ikili sıkışmalar, 200+ üçlü sıkışmalar
+- Tahta: 5x5'ten başlar, 49. bölümden itibaren 10x10
+- Zorluk: 1–30 temel mantık, 31–150 ikili sıkışmalar, 150+ üçlü sıkışmalar
+- 💡 ipucu ve 🐱 kedi hakları reklamsız: her bölüm +1 ipucu, her 3 bölümde +1 kedi
 - Bölümleri yeniden üretmek için: `node build-levels.js`
 
 ## Dosyalar
