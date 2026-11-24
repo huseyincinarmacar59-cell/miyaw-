@@ -211,12 +211,12 @@ tbody tr:hover{background:#fafbfd}
   /* iPhone, 16px altı yazı kutusuna dokununca sayfayı büyütüp kaydırıyor; engelle */
   .alan input,.alan select,.alan textarea,.ara input,.secici,#sifre{font-size:16px}
   .uyg{flex-direction:column}
-  .yan{position:fixed;bottom:0;left:0;right:0;top:auto;width:auto;height:auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:50;flex-direction:row;border-top:1px solid rgba(255,255,255,.06)}
+  .yan{position:fixed;bottom:0;left:0;right:0;top:auto;width:auto;height:auto;padding:4px 8px max(6px, calc(env(safe-area-inset-bottom) - 18px));z-index:50;flex-direction:row;border-top:1px solid rgba(255,255,255,.06)}
   .yan .logo-blok,.yan-alt{display:none}
   .menu{margin:0;flex-direction:row;width:100%;gap:2px}
-  .menu button{flex:1;flex-direction:column;gap:3px;font-size:11px;padding:8px 2px;justify-content:center}
+  .menu button{flex:1;flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;justify-content:center}
   .menu button span{white-space:nowrap}
-  .ana{padding:calc(16px + env(safe-area-inset-top)) 14px 100px}
+  .ana{padding:calc(16px + env(safe-area-inset-top)) 14px 84px}
   .ust{margin-bottom:16px;align-items:center}
   .ust h2{font-size:22px}
   .ust .btn span{display:none}
