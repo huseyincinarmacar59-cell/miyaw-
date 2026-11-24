@@ -1,0 +1,2 @@
+/* Abonelik paneli kasası — uygulama anahtarları panel şifresiyle kilitli. lisans/olustur.js üretir. */
+window.ABONELIK_KASA = {"tur":310000,"tuz":"mis4kq/68bJVVrt7EM9NZA==","iv":"Li62LSlEHm1ZGwZM","veri":"k64g7EbEgo+EKDFxdaLbjH95wdJIV+jUVtouREogN/8s+85GEhXZxaX6b10Q2hNcV5Qrvo1KngH9A/GeoFeCLK55utARwYjNywH9K61m1uTTk7g56L772JxvadKicjemlgmEX8S/lpLn47hRUP/8tKXviwYDXPVy4lh0m6J+6raRzpj6pUWpP7qO6iavQVmNRCcyizAeZDYwgyLQeBMvgyMvziM/2OVh/SeTxB0P5H5WHV06MEJ1V9BTMVcbFQ/FGGOkvpXUFfskJ8QnDcbg13Apua8nK2TBdT+SnbXqD+HJUgC8M6GfcLs="};
